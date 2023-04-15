@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { ascending } from "d3-array"
 import { csv } from "d3-fetch";
-import { LineChart } from "shared";
+import { scaleLinear, scaleTime } from "d3-scale";
+import { LineChart } from "graphic";
 
 //region TODO: Move to React context and replace with correct api
 import co2 from "../fixtures/national-carbon-emissions.csv";
+
+const CHART_ID = "v8-line-chart";
+const WIDTH = 960;
+const HEIGHT = 600;
+const MARGIN = { top: 20, right: 30, bottom: 30, left: 40 };
+const STROKE = { linecap: "round", linejoin: "round", width: 1.5, opacity: 1, mixBlendMode: "multiply" };
 
 /**
  * When handling import could use Promise.all([import])
@@ -54,19 +61,19 @@ function Loader() {
 
     return !!chartData ?
         (
-            <LineChart data={chartData}
-                       color={type => {
-                           return `hsl(${colorMap[type]}, 100%, 50%)`;
-                       }}
-                       options={{
-                           x: value => new Date(value["year"]),
-                           y: value => value["value"],
-                           type: value => value["type"],
-                           axis: [
-                               { orient: "left" },
-                               { orient: "bottom" }
-                           ]
-                       }}>
+            <LineChart id={CHART_ID}
+                       width={WIDTH}
+                       height={HEIGHT}
+                       margin={MARGIN}
+                       stroke={STROKE}
+                       source={chartData}
+                       dataDescHandler={[
+                           [value => new Date(value["year"]), scaleTime,   [MARGIN.left, WIDTH - MARGIN.right],  [{ orient: "bottom" }]],
+                           [value => value["value"],           scaleLinear, [HEIGHT - MARGIN.bottom, MARGIN.top], [{ orient: "left" }]]
+                       ]}
+                       typeDescHandler={[
+                           [value => value["type"], key => ({ label: key, color: `hsl(${colorMap[key]}, 100%, 50%)` })]
+                       ]}>
             </LineChart>
         ) : <h1>Loading...</h1>;
 }
