@@ -3,7 +3,6 @@ import { Route } from "react-router";
 import { Link } from "react-router-dom";
 import { IoBarChart  } from "react-icons/io5";
 import { ascending } from "d3-array";
-import { csv } from "d3-fetch";
 import { Button, Col, Container, Row } from "shared";
 import { GraphicContext } from "./components/context";
 import useGraphicCallback from "./components/callback";
@@ -12,132 +11,91 @@ import DoughnutChart from "./components/doughnutChart";
 
 import sharedStyles from "shared/styles/debug.module.css";
 
-//region Test import fixtures
-import GlobalAnnual from "./fixtures/line/HadCRUT-global-annual.csv";
-import GlobalMonthly from "./fixtures/line/HadCRUT-global-monthly.csv";
-import NHAnnual from "./fixtures/line/HadCRUT-northern-hemisphere-annual.csv";
-import NHMonthly from "./fixtures/line/HadCRUT-northern-hemisphere-monthly.csv";
-import SHAnnual from "./fixtures/line/HadCRUT-southern-hemisphere-annual.csv";
-import SHMonthly from "./fixtures/line/HadCRUT-southern-hemisphere-monthly.csv";
-
-import layer1 from "./fixtures/doughnut/layer1.csv";
-import layer2 from "./fixtures/doughnut/layer2.csv";
-import layer3 from "./fixtures/doughnut/layer3.csv";
+// The content service, reached through the gateway -- see
+// visualization-server's services/gateway (default_service_table routes
+// "/api/content" here) and services/content (the chart/file API itself).
+// Override with REACT_APP_API_BASE_URL for a non-default gateway address.
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL ?? "http://localhost:8080/api/content";
 
 /**
- * When handling import could use Promise.all([import])
- * @example
- *
- * const dataGroup = await Promise.all([
- *     import("../balabala1"), import("../balabala2"), ......
- * ]).then([GlobalAnnual, ......] => { GlobalAnnual, ...... });
- *
+ * Fetches the chart list, finds the first chart of the given chart_type,
+ * and fetches its full detail (files/rows for "line", an assembled tree
+ * for "doughnut" -- see services/content/content_service.hpp). null if no
+ * chart of that type exists yet.
+ * @param {"line"|"doughnut"} chartType
+ * @return {Promise<object|null>}
  */
-function handlePath(type) {
-    switch (type) {
-        case "line":
-            return { GlobalAnnual, GlobalMonthly, NHAnnual, NHMonthly, SHAnnual, SHMonthly };
-        case "doughnut":
-            return { layer1, layer2, layer3 };
-        default:
-            throw new TypeError(`invalid type ${type}`);
-    }
+async function fetchChartByType(chartType) {
+    const listResponse = await fetch(`${API_BASE_URL}/charts`);
+    if (!listResponse.ok) throw new Error(`GET /charts: ${listResponse.status}`);
+    const charts = await listResponse.json();
+
+    const summary = charts.find(chart => chart.chart_type === chartType);
+    if (!summary) return null;
+
+    const detailResponse = await fetch(`${API_BASE_URL}/charts/${summary.id}`);
+    if (!detailResponse.ok) throw new Error(`GET /charts/${summary.id}: ${detailResponse.status}`);
+    return await detailResponse.json();
 }
 
-function handleData(type, data) {
-    switch (type) {
-        case "line": {
-            const result = data.sort((a, b) => ascending(a.time, b.time));
-            console.log("line", result);
-            return result;
-        }
-        case "doughnut": {
-            const result = { name: "emission", children: data };
-            console.log("doughnut", "\n", result);
-            return result;
-        }
-        default:
-            throw new TypeError(`invalid type ${type}`);
-    }
-}
-
-function extracted(data, max, depth) {
-    if (!data[depth]) return max;
-    let cache = [];
-    for (let i = 0; i < max;) {
-        const { key: subKey, value: subValue } = data[depth].shift();
-        if (max < subValue) {
-            cache = max;
-            data[depth].unshift({ key: subKey, value: subValue })
-            break;
-        } else {
-            i += subValue;
-            const children = extracted(data, subValue, depth + 1);
-            if (Array.isArray(children) && children.length > 1) {
-                cache.push({ name: subKey, children });
-            } else {
-                cache.push({ name: subKey, value: subValue });
-            }
-        }
-    }
-    return cache;
+/**
+ * Flattens a "line" chart's files -- each file is one named series, rows
+ * are [time, value] pairs (see the {time, value} column convention) --
+ * into the flat {type, time, anomaly} row array LineChart's data-access
+ * callbacks expect, sorted by time ascending.
+ * @param {object} chart
+ * @return {[{type:string,time:string,anomaly:number}]}
+ */
+function flattenLineChart(chart) {
+    const rows = chart.files.flatMap(file =>
+        file.rows.map(([time, value]) => ({
+            type: file.name,
+            time,
+            anomaly: +value
+        }))
+    );
+    return rows.sort((a, b) => ascending(a.time, b.time));
 }
 
 function Graphic() {
     const [doughnutChartData, setDoughnutChartData] = useState(null);
     const [lineChartData, setLineChartData] = useState(null);
+    const [loadError, setLoadError] = useState(null);
     const { charts } = useContext(GraphicContext);
     const { line, doughnut } = useGraphicCallback();
 
     useEffect(() => {
-        async function fetchData(type, jobs = []) {
-            // csv use fetch https://developer.mozilla.org/docs/Web/API/fetch
-            Object.entries(handlePath(type)).forEach(([key, path]) => {
-                jobs.push(csv(path, data => {
-                    switch (type) {
-                        case "line":
-                            return {
-                                type: key,
-                                // monthly contain yyyy-mm, yearly pickup middle yyyy-06
-                                time: data["Time"].includes("-") ? data["Time"] : `${data["Time"]}-01-01`,
-                                anomaly: +data["Anomaly (deg C)"]
-                            }
-                        case "doughnut":
-                            return {
-                                key: data["sector"],
-                                value: +data["emissions"],
-                            }
-                        default:
-                            throw new TypeError(`invalid type ${type}`);
-                    }
-                }));
-            });
-            return await Promise.all(jobs);
-        }
-
-        Promise.all([fetchData("line"), fetchData("doughnut")]).then(([line, [doughnutMaster, ...doughnutValue]]) => {
-                const lineCache = line.reduce((pre, cur) => pre.concat(cur)), doughnutCache = [];
-                setLineChartData(handleData("line", lineCache));
-                for (const { key, value: max } of doughnutMaster) {
-                    const children = extracted(doughnutValue, max, 0);
-                    if (Array.isArray(children) && children.length > 1) {
-                        doughnutCache.push({ name: key, children });
-                    } else {
-                        doughnutCache.push({ name: key, value: children })
-                    }
+        Promise.all([fetchChartByType("line"), fetchChartByType("doughnut")])
+            .then(([lineChart, doughnutChart]) => {
+                if (lineChart) {
+                    const rows = flattenLineChart(lineChart);
+                    console.log("line", rows);
+                    setLineChartData(rows);
                 }
-                setDoughnutChartData(handleData("doughnut", doughnutCache));
-            }
-        );
+                // The tree is already {name, children: [...]} / {name, value},
+                // assembled server-side -- ready for d3-hierarchy as-is.
+                if (doughnutChart) {
+                    console.log("doughnut", doughnutChart.tree);
+                    setDoughnutChartData(doughnutChart.tree);
+                }
+            })
+            .catch(err => setLoadError(err?.message ?? String(err)));
     }, []);
 
     return (
         <>
           <div className={sharedStyles.container}>
             <Container fluid>
+              {loadError && (
+                  <Row>
+                    <Col>
+                      <p>Failed to load chart data from {API_BASE_URL}: {loadError}</p>
+                    </Col>
+                  </Row>
+              )}
               <Row>
                 <Col>
-                  <Button onClick={() => {
+                  <Button disabled={!lineChartData} onClick={() => {
                       line("post", {
                           source: lineChartData,
                           x: value => new Date(value["time"]),
@@ -178,7 +136,7 @@ function Graphic() {
               </Row>
               <Row>
                 <Col>
-                  <Button onClick={() => {
+                  <Button disabled={!doughnutChartData} onClick={() => {
                       doughnut("post", {
                           source: doughnutChartData
                       });
@@ -217,8 +175,6 @@ function Graphic() {
         </>
     );
 }
-
-//endregion
 
 const DEBUG_ROOT = "/artifact/debug";
 
