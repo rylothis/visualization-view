@@ -1,4 +1,11 @@
-@import-normalize;
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+}
 
 body {
   margin: 0;
