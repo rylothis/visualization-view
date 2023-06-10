@@ -2,7 +2,7 @@ import React from "react";
 import { Route, Routes } from "react-router";
 import { ApiProvider, InfoContextHolder } from "api";
 import { AuthProvider, Login, ProtectedRoute, Register } from "auth";
-import { ChartDetail, ChartForm, ChartList } from "dashboard";
+import { ChartDetail, ChartForm, ChartList, ClassroomView, DeviceForm, DeviceList } from "dashboard";
 
 import Debug from "./debug";
 
@@ -20,6 +20,9 @@ function App() {
                 <Route path="/charts/new" element={<ProtectedRoute><ChartForm mode="create" /></ProtectedRoute>} />
                 <Route path="/charts/:id" element={<ChartDetail />} />
                 <Route path="/charts/:id/edit" element={<ProtectedRoute><ChartForm mode="edit" /></ProtectedRoute>} />
+                <Route path="/devices" element={<ProtectedRoute><DeviceList /></ProtectedRoute>} />
+                <Route path="/devices/new" element={<ProtectedRoute><DeviceForm /></ProtectedRoute>} />
+                <Route path="/devices/:id" element={<ClassroomView />} />
                 <Route path="*" element={<h1>Error</h1>} />
               </Routes>
             </div>

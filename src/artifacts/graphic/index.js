@@ -14,3 +14,7 @@ export {
 export {
     default as DoughnutChart
 } from "./components/doughnutChart";
+
+export {
+    default as BarChart
+} from "./components/barChart";
