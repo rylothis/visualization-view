@@ -1,0 +1,11 @@
+{
+    "name": "dashboard",
+    "version": "1.0.0",
+    "dependencies": {
+        "d3-array": "latest",
+        "d3-dsv": "latest",
+        "d3-interpolate": "latest",
+        "d3-scale": "latest",
+        "d3-scale-chromatic": "latest"
+    }
+}

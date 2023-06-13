@@ -1,30 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAlertFallback } from "shared";
-
-async function handleJsonResponse(response) {
-    const json = await response.json();
-
-    return { state: response.ok ? "success" : "fail", data: json };
-}
-
-async function handleTextResponse(response) {
-    const text = await response.text();
-
-    return { state: response.ok ? "success" : "fail", data: text };
-}
-
-async function handleResponse(response) {
-    let contentType = response.headers.get("content-type");
-
-    switch (true) {
-        case contentType.includes("json"):
-            return await handleJsonResponse(response);
-        case contentType.includes("text"):
-            return await handleTextResponse(response);
-        default:
-            throw new Error(`Unknown content type ${contentType}`);
-    }
-}
+import { parseResponse } from "./parse";
 
 function useFetch(initialUrl, initialOptions) {
     const [url, setUrl] = useState(initialUrl);
@@ -42,7 +18,7 @@ function useFetch(initialUrl, initialOptions) {
             try {
                 const response = await fetch(url, options);
 
-                const { state, data } = await handleResponse(response);
+                const { state, data } = await parseResponse(response);
 
                 switch (state) {
                     case "success":

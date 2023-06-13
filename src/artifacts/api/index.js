@@ -9,3 +9,7 @@ export {
 export {
     default as useFetch
 } from "./components/fetch";
+
+export {
+    parseResponse
+} from "./components/parse";
