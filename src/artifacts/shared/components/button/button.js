@@ -121,7 +121,7 @@ function calculateColor(base, outline) {
 }
 
 const Button = forwardRef(function Button({ children, component: Component = "button", style: moreStyle = {},
-    size = "md", color = "#fff", disabled, outline, onClick, ...addition }, ref) {
+    size = "md", color = "#4f46e5", disabled, outline, onClick, ...addition }, ref) {
     const [{ base, hover, active, disable }, setColor] = useState(() => calculateColor(color, outline));
 
     useEffect(() => {
