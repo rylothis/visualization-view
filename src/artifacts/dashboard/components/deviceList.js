@@ -44,11 +44,11 @@ function DeviceList() {
         <div className={styles.page}>
           <div className={styles.header}>
             <h1>Devices</h1>
-            <Link to="/devices/new">New device</Link>
+            <Button size="sm" component={Link} to="/devices/new">New device</Button>
           </div>
-          {error && <p>{error}</p>}
+          {error && <p className={styles.errorBanner}>{error}</p>}
           {rotatedKey && (
-              <p>
+              <p className={styles.notice}>
                 New API key for {rotatedKey.id} (copy it now, it will not be shown again):{" "}
                 <code>{rotatedKey.api_key}</code>
               </p>
@@ -60,9 +60,10 @@ function DeviceList() {
                     <li key={device.id} className={styles.card}>
                       <span className={styles.type}>{device.room}{device.revoked ? " · revoked" : ""}</span>
                       <h2><Link to={`/devices/${device.id}`}>{device.name}</Link></h2>
-                      <Button size="sm" onClick={() => onRotate(device.id)}>Rotate key</Button>
-                      {" "}
-                      <Button size="sm" color="#dc3545" onClick={() => onRevoke(device.id)}>Revoke</Button>
+                      <div className={styles.cardActions}>
+                        <Button size="sm" outline onClick={() => onRotate(device.id)}>Rotate key</Button>
+                        <Button size="sm" outline color="#dc2626" onClick={() => onRevoke(device.id)}>Revoke</Button>
+                      </div>
                     </li>
                 ))}
               </ul>
