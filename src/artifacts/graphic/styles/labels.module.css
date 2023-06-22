@@ -24,5 +24,6 @@
 }
 
 .label p {
-    font-size: xx-small;
+    font-size: 0.75rem;
+    color: #4b5563;
 }
