@@ -37,7 +37,7 @@ function DeviceForm() {
               <p>Copy these into the device's firmware config now -- the API key will not be shown again.</p>
               <p>Device ID: <code>{created.id}</code></p>
               <p>API key: <code>{created.api_key}</code></p>
-              <Link to={`/devices/${created.id}`}>Go to classroom view</Link>
+              <Button component={Link} to={`/devices/${created.id}`}>Go to classroom view</Button>
             </div>
         );
     }
