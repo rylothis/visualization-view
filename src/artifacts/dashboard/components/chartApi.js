@@ -47,5 +47,5 @@ export function flattenLineChart(chart) {
     const rows = chart.files.flatMap(file =>
         file.rows.map(([time, value]) => ({ type: file.name, time, anomaly: +value }))
     );
-    return rows.sort((a, b) => ascending(a.time, b.time));
+    return rows.sort((a, b) => ascending(new Date(a.time), new Date(b.time)));
 }

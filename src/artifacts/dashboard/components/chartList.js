@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "shared";
 import { useAuth } from "auth";
 
 import { listCharts } from "./chartApi";
@@ -23,9 +24,9 @@ function ChartList() {
         <div className={styles.page}>
           <div className={styles.header}>
             <h1>Charts</h1>
-            {status === "authenticated" && <Link to="/charts/new">New chart</Link>}
+            {status === "authenticated" && <Button size="sm" component={Link} to="/charts/new">New chart</Button>}
           </div>
-          {error && <p>{error}</p>}
+          {error && <p className={styles.errorBanner}>{error}</p>}
           {charts && charts.length === 0 && <p className={styles.empty}>No charts yet.</p>}
           {charts && charts.length > 0 && (
               <ul className={styles.list}>

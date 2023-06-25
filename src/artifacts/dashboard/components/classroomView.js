@@ -21,6 +21,18 @@ function dailyCo2e(rows) {
     return Array.from(byDay.entries()).sort(([a], [b]) => (a < b ? -1 : 1)).map(([label, value]) => ({ label, value }));
 }
 
+function Stat({ label, value, unit }) {
+    return (
+        <li className={`${styles.card} ${styles.stat}`}>
+          <span className={styles.statLabel}>{label}</span>
+          <span className={styles.statValue}>
+            {value}
+            {unit && <span className={styles.statUnit}>{unit}</span>}
+          </span>
+        </li>
+    );
+}
+
 function ClassroomView() {
     const { id } = useParams();
     const [readings, setReadings] = useState(null);
@@ -52,19 +64,22 @@ function ClassroomView() {
     return (
         <div className={styles.page}>
           <div className={styles.header}>
-            <h1>{readings?.device?.name ?? "Classroom"}</h1>
-            <span className={styles.type}>{readings?.device?.room}</span>
+            <div>
+              <h1>{readings?.device?.name ?? "Classroom"}</h1>
+              {latest && <p className={styles.subtitle}>Last reading {new Date(latest.ts * 1000).toLocaleString()}</p>}
+            </div>
+            {readings?.device?.room && <span className={styles.type}>{readings.device.room}</span>}
           </div>
-          {error && <p>{error}</p>}
+          {error && <p className={styles.errorBanner}>{error}</p>}
 
           {latest && (
               <ul className={styles.list}>
-                <li className={styles.card}>Occupancy: {latest.occupancy ?? "--"}</li>
-                <li className={styles.card}>CO2: {latest.co2_ppm ?? "--"} ppm</li>
-                <li className={styles.card}>Temperature: {latest.temperature_c ?? "--"} C</li>
-                <li className={styles.card}>Power: {latest.power_kw ?? "--"} kW</li>
-                <li className={styles.card}>Energy today: {latest.energy_kwh_today ?? "--"} kWh</li>
-                <li className={styles.card}>CO2e today: {latest.co2e_kg_today ?? "--"} kg</li>
+                <Stat label="Occupancy" value={latest.occupancy ?? "--"} />
+                <Stat label="CO2" value={latest.co2_ppm ?? "--"} unit="ppm" />
+                <Stat label="Temperature" value={latest.temperature_c ?? "--"} unit="C" />
+                <Stat label="Power" value={latest.power_kw ?? "--"} unit="kW" />
+                <Stat label="Energy today" value={latest.energy_kwh_today ?? "--"} unit="kWh" />
+                <Stat label="CO2e today" value={latest.co2e_kg_today ?? "--"} unit="kg" />
               </ul>
           )}
 
@@ -97,14 +112,14 @@ function ClassroomView() {
               <>
                 <h2>Summary</h2>
                 <ul className={styles.list}>
-                  <li className={styles.card}>Total energy: {summary.total_energy_kwh.toFixed(2)} kWh</li>
-                  <li className={styles.card}>Total CO2e: {summary.total_co2e_kg.toFixed(2)} kg</li>
-                  <li className={styles.card}>Unoccupied energy: {summary.unoccupied_energy_kwh.toFixed(2)} kWh
-                    ({summary.wasted_pct.toFixed(1)}% wasted)</li>
-                  <li className={styles.card}>Average occupied CO2: {summary.avg_co2_occupied.toFixed(0)} ppm</li>
-                  <li className={styles.card}>Max CO2: {summary.max_co2.toFixed(0)} ppm</li>
-                  <li className={styles.card}>Energy per person-hour: {summary.energy_per_person_hour.toFixed(3)} kWh</li>
-                  <li className={styles.card}>CO2e per person-hour: {summary.co2e_per_person_hour.toFixed(3)} kg</li>
+                  <Stat label="Total energy" value={summary.total_energy_kwh.toFixed(2)} unit="kWh" />
+                  <Stat label="Total CO2e" value={summary.total_co2e_kg.toFixed(2)} unit="kg" />
+                  <Stat label="Unoccupied energy" value={summary.unoccupied_energy_kwh.toFixed(2)}
+                        unit={`kWh (${summary.wasted_pct.toFixed(1)}% wasted)`} />
+                  <Stat label="Average occupied CO2" value={summary.avg_co2_occupied.toFixed(0)} unit="ppm" />
+                  <Stat label="Max CO2" value={summary.max_co2.toFixed(0)} unit="ppm" />
+                  <Stat label="Energy per person-hour" value={summary.energy_per_person_hour.toFixed(3)} unit="kWh" />
+                  <Stat label="CO2e per person-hour" value={summary.co2e_per_person_hour.toFixed(3)} unit="kg" />
                 </ul>
               </>
           )}

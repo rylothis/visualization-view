@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Link } from "react-router-dom";
 import { DoughnutChart } from "graphic";
+import { Button } from "shared";
 import { useAuth } from "auth";
 
 import { getChart } from "./chartApi";
@@ -32,13 +33,11 @@ function ChartDetail() {
           <div className={styles.header}>
             <h1>{chart?.name ?? "Chart"}</h1>
             {isOwner && (
-                <span>
-                  <Link to={`/charts/${id}/edit`}>Edit</Link>
-                </span>
+                <Button size="sm" outline component={Link} to={`/charts/${id}/edit`}>Edit</Button>
             )}
           </div>
-          {error && <p>{error}</p>}
-          {chart?.description && <p>{chart.description}</p>}
+          {error && <p className={styles.errorBanner}>{error}</p>}
+          {chart?.description && <p className={styles.subtitle}>{chart.description}</p>}
           {chart?.chart_type === "line" && <LineChartView chart={chart} />}
           {chart?.chart_type === "doughnut" && chart.tree && <DoughnutChart source={chart.tree} />}
         </div>

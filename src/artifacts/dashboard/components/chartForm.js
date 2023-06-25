@@ -172,7 +172,7 @@ function ChartForm({ mode }) {
           </Button>
 
           {mode === "edit" && (
-              <Button type="button" color="#dc3545" disabled={pending} onClick={onDeleteChart}>
+              <Button type="button" outline color="#dc2626" disabled={pending} onClick={onDeleteChart}>
                 Delete chart
               </Button>
           )}
