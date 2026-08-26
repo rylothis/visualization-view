@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/visualization-view/static/css/main.621dfda1.css",
-    "main.js": "/visualization-view/static/js/main.17b60764.js",
+    "main.js": "/visualization-view/static/js/main.79f38ab9.js",
     "static/js/496.05deeddc.chunk.js": "/visualization-view/static/js/496.05deeddc.chunk.js",
     "static/media/nhtemp.csv": "/visualization-view/static/media/nhtemp.266f46b9e9398d8dd56d.csv",
     "static/media/HadCRUT-southern-hemisphere-monthly.csv": "/visualization-view/static/media/HadCRUT-southern-hemisphere-monthly.6771bcb3baa1cc987b83.csv",
@@ -25,11 +25,11 @@
     "static/media/layer2.csv": "/visualization-view/static/media/layer2.a9654613f7fddfe10dd0.csv",
     "static/media/layer1.csv": "/visualization-view/static/media/layer1.f02959aadd6f23cbd3a6.csv",
     "main.621dfda1.css.map": "/visualization-view/static/css/main.621dfda1.css.map",
-    "main.17b60764.js.map": "/visualization-view/static/js/main.17b60764.js.map",
+    "main.79f38ab9.js.map": "/visualization-view/static/js/main.79f38ab9.js.map",
     "496.05deeddc.chunk.js.map": "/visualization-view/static/js/496.05deeddc.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.621dfda1.css",
-    "static/js/main.17b60764.js"
+    "static/js/main.79f38ab9.js"
   ]
 }
